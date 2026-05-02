@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
+from uuid import uuid4
 
 
 @dataclass(frozen=True)
@@ -30,7 +31,7 @@ class BillPayDetails:
 
 
 def build_parabank_customer() -> ParabankCustomer:
-    suffix = datetime.now(UTC).strftime("%m%d%H%M%S")
+    suffix = f"{datetime.now(UTC).strftime('%H%M%S')}{uuid4().hex[:4]}"
 
     return ParabankCustomer(
         first_name="Play",

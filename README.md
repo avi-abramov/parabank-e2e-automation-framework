@@ -7,20 +7,17 @@ This project is structured as a small but realistic automation framework rather 
 ## What This Project Covers
 
 - Public navigation flows
+- About, Services, and Site Map page checks
 - Contact form submission
+- Required-field validation for contact form
 - User registration
-- Login and logout
-- Invalid login handling
+- Required-field validation for registration
+- Logout after registration
+- Empty login validation
 - Duplicate username validation
 - Forgot-login recovery
 - Customer lookup failure handling
-- Open new account
-- Transfer funds between accounts
-- Account details and transaction history
-- Bill pay
-- Update contact information
-- Loan request
-- Transaction lookup by date
+- Internal ParaBank error detection so tests do not pass when the site renders server errors
 
 ## Tech Stack
 
@@ -36,9 +33,10 @@ This project is structured as a small but realistic automation framework rather 
 - Centralized runtime settings in [src/core/settings.py](./src/core/settings.py)
 - Reusable generated data in [src/core/test_data.py](./src/core/test_data.py)
 - Page-object implementation in [src/pages/parabank_page.py](./src/pages/parabank_page.py)
-- End-to-end suite in [tests/test_parabank_e2e.py](./tests/test_parabank_e2e.py)
+- One focused scenario per test file under [tests](./tests)
 - Automatic screenshots on test failure
 - Headed local execution with slow motion, maximized browser, and a 5-second pause between tests
+- Guard assertions that fail fast if ParaBank displays its internal server-error panel
 
 ## Run Locally
 
@@ -47,7 +45,7 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 python -m playwright install chromium
-pytest -q tests/test_parabank_e2e.py
+pytest -q tests
 ```
 
 ## Default Local Run Behavior
@@ -93,11 +91,23 @@ TEST_PAUSE_MS=5000
 |       |-- base_page.py
 |       `-- parabank_page.py
 `-- tests
-    `-- test_parabank_e2e.py
+    |-- conftest.py
+    |-- test_about_page_disclaimer.py
+    |-- test_contact_form_required_fields.py
+    |-- test_contact_form_submission.py
+    |-- test_customer_lookup_failure.py
+    |-- test_customer_lookup_recovers_registered_user.py
+    |-- test_duplicate_username_validation.py
+    |-- test_empty_login_requires_credentials.py
+    |-- test_registration_success.py
+    |-- test_registration_required_fields.py
+    |-- test_services_page_lists_bookstore_services.py
+    `-- test_site_map_lists_account_services.py
 ```
 
 ## Notes
 
 - The target system is an external public demo site, so behavior can change outside the project.
+- ParaBank currently renders internal server errors on several logged-in banking flows, including accounts overview, opening new accounts, account details, bill pay, profile updates, loans, and transaction search. Those flows are intentionally excluded from the default demo suite so the visible run stays clean and trustworthy.
 - Failed tests save screenshots into `artifacts/screenshots/`.
-- The current suite was verified successfully in both fast headless validation mode and visible demo mode.
+- The suite is intended to fail if ParaBank displays `An internal error has occurred and has been logged.`

@@ -10,10 +10,15 @@ from src.pages.base_page import BasePage
 
 
 class ParaBankPage(BasePage):
+    INTERNAL_ERROR_TEXT = "An internal error has occurred and has been logged."
+
     def open(self) -> None:
         self.goto("index.htm")
         expect(self.page).to_have_title("ParaBank | Welcome | Online Banking")
         expect(self.locator("#loginPanel")).to_be_visible()
+
+    def assert_no_internal_error(self) -> None:
+        expect(self.locator("#rightPanel")).not_to_contain_text(self.INTERNAL_ERROR_TEXT)
 
     def open_header_link(self, link_name: str) -> None:
         self.locator("#headerPanel").get_by_role("link", name=link_name).click()
@@ -24,12 +29,15 @@ class ParaBankPage(BasePage):
     def open_registration_from_home(self) -> None:
         self.locator("#loginPanel").get_by_role("link", name="Register").click()
         expect(self.locator("#rightPanel")).to_contain_text("Signing up is easy!")
+        self.assert_no_internal_error()
 
     def open_lookup_from_home(self) -> None:
         self.locator("#loginPanel").get_by_role("link", name="Forgot login info?").click()
         expect(self.locator("#rightPanel")).to_contain_text("Customer Lookup")
+        self.assert_no_internal_error()
 
     def assert_right_panel_contains(self, *texts: str) -> None:
+        self.assert_no_internal_error()
         panel = self.locator("#rightPanel")
         for text in texts:
             expect(panel).to_contain_text(text)
@@ -49,6 +57,17 @@ class ParaBankPage(BasePage):
         self.page.get_by_role("button", name="Send to Customer Care").click()
         self.assert_right_panel_contains(f"Thank you {name}")
         self.assert_right_panel_contains("A Customer Care Representative will be contacting you.")
+
+    def submit_empty_contact_form(self) -> None:
+        self.page.get_by_role("button", name="Send to Customer Care").click()
+
+    def assert_contact_required_field_errors(self) -> None:
+        self.assert_right_panel_contains(
+            "Name is required.",
+            "Email is required.",
+            "Phone is required.",
+            "Message is required.",
+        )
 
     def _fill_registration_form(self, customer: ParabankCustomer) -> None:
         values = {
@@ -72,6 +91,23 @@ class ParaBankPage(BasePage):
         self._fill_registration_form(customer)
         self.page.get_by_role("button", name="Register").click()
 
+    def submit_empty_registration(self) -> None:
+        self.page.get_by_role("button", name="Register").click()
+
+    def assert_registration_required_field_errors(self) -> None:
+        self.assert_right_panel_contains(
+            "First name is required.",
+            "Last name is required.",
+            "Address is required.",
+            "City is required.",
+            "State is required.",
+            "Zip Code is required.",
+            "Social Security Number is required.",
+            "Username is required.",
+            "Password is required.",
+            "Password confirmation is required.",
+        )
+
     def register_customer(self, customer: ParabankCustomer) -> None:
         self.submit_registration(customer)
         self.assert_right_panel_contains(f"Welcome {customer.username}")
@@ -83,13 +119,21 @@ class ParaBankPage(BasePage):
         self.locator("input[name='password']").fill(password)
         self.page.get_by_role("button", name="Log In").click()
 
+    def submit_empty_login(self) -> None:
+        self.page.get_by_role("button", name="Log In").click()
+
     def login(self, username: str, password: str) -> None:
         self.attempt_login(username, password)
         expect(self.locator("#leftPanel")).to_contain_text("Accounts Overview")
+        self.assert_no_internal_error()
 
     def assert_login_error(self) -> None:
         self.assert_right_panel_contains("Error!")
         self.assert_right_panel_contains("The username and password could not be verified.")
+
+    def assert_empty_login_error(self) -> None:
+        self.assert_right_panel_contains("Error!")
+        self.assert_right_panel_contains("Please enter a username and password.")
 
     def logout(self) -> None:
         self.locator("#leftPanel").get_by_role("link", name="Log Out").click()
@@ -98,6 +142,7 @@ class ParaBankPage(BasePage):
     def open_accounts_overview(self) -> None:
         self.locator("#leftPanel").get_by_role("link", name="Accounts Overview").click()
         expect(self.locator("#accountTable")).to_be_visible()
+        self.assert_no_internal_error()
 
     def get_account_numbers(self) -> list[str]:
         self.open_accounts_overview()
@@ -114,6 +159,12 @@ class ParaBankPage(BasePage):
             arg=account_id,
         )
         return self.locator("#rightPanel").inner_text()
+
+    def filter_account_activity_by_type(self, transaction_type: str) -> str:
+        self.locator("#transactionType").select_option(label=transaction_type)
+        self.page.get_by_role("button", name="Go").click()
+        expect(self.locator("#transactionTable")).to_be_visible()
+        return self.locator("#transactionTable").inner_text()
 
     def open_new_account(self, *, from_account_id: str, account_type: str = "SAVINGS") -> str:
         self.locator("#leftPanel").get_by_role("link", name="Open New Account").click()
@@ -136,8 +187,12 @@ class ParaBankPage(BasePage):
         self.assert_right_panel_contains("Transfer Complete!")
         self.assert_right_panel_contains("See Account Activity for more details.")
 
-    def pay_bill(self, *, payee: BillPayDetails, amount: Decimal, from_account_id: str) -> None:
+    def open_bill_pay_page(self) -> None:
         self.locator("#leftPanel").get_by_role("link", name="Bill Pay").click()
+        self.assert_right_panel_contains("Bill Payment Service")
+
+    def pay_bill(self, *, payee: BillPayDetails, amount: Decimal, from_account_id: str) -> None:
+        self.open_bill_pay_page()
 
         values = {
             "payee.name": payee.name,
@@ -159,11 +214,49 @@ class ParaBankPage(BasePage):
         self.assert_right_panel_contains("Bill Payment Complete")
         self.assert_right_panel_contains("See Account Activity for more details.")
 
+    def submit_empty_bill_payment(self) -> None:
+        self.page.get_by_role("button", name="Send Payment").click()
+
+    def assert_bill_payment_required_field_errors(self) -> None:
+        self.assert_right_panel_contains(
+            "Payee name is required.",
+            "Address is required.",
+            "City is required.",
+            "State is required.",
+            "Zip Code is required.",
+            "Phone number is required.",
+            "Account number is required.",
+            "The amount cannot be empty.",
+        )
+
     def find_transactions_by_date(self, *, account_id: str, on_date: date) -> str:
         self.locator("#leftPanel").get_by_role("link", name="Find Transactions").click()
         self.locator("#accountId").select_option(value=account_id)
         self.locator("#transactionDate").fill(on_date.strftime("%m-%d-%Y"))
         self.locator("#findByDate").click()
+        expect(self.locator("#transactionTable")).to_be_visible()
+        return self.locator("#transactionTable").inner_text()
+
+    def find_transactions_by_amount(self, *, account_id: str, amount: Decimal) -> str:
+        self.locator("#leftPanel").get_by_role("link", name="Find Transactions").click()
+        self.locator("#accountId").select_option(value=account_id)
+        self.locator("#amount").fill(str(amount))
+        self.locator("#findByAmount").click()
+        expect(self.locator("#transactionTable")).to_be_visible()
+        return self.locator("#transactionTable").inner_text()
+
+    def find_transactions_by_date_range(
+        self,
+        *,
+        account_id: str,
+        from_date: date,
+        to_date: date,
+    ) -> str:
+        self.locator("#leftPanel").get_by_role("link", name="Find Transactions").click()
+        self.locator("#accountId").select_option(value=account_id)
+        self.locator("#fromDate").fill(from_date.strftime("%m-%d-%Y"))
+        self.locator("#toDate").fill(to_date.strftime("%m-%d-%Y"))
+        self.locator("#findByDateRange").click()
         expect(self.locator("#transactionTable")).to_be_visible()
         return self.locator("#transactionTable").inner_text()
 
