@@ -36,6 +36,62 @@ class ParaBankPage(BasePage):
         expect(self.locator("#rightPanel")).to_contain_text("Customer Lookup")
         self.assert_no_internal_error()
 
+    def assert_home_page_layout(self) -> None:
+        self.assert_no_internal_error()
+        expect(self.locator("#leftPanel")).to_contain_text("Customer Login")
+        expect(self.locator("#loginPanel")).to_contain_text("Username")
+        expect(self.locator("#loginPanel")).to_contain_text("Password")
+        expect(self.locator("#headerPanel")).to_contain_text("About Us")
+        expect(self.locator("#headerPanel")).to_contain_text("Services")
+        expect(self.locator("#headerPanel")).to_contain_text("Products")
+        expect(self.locator("#headerPanel")).to_contain_text("Locations")
+        expect(self.locator("#headerPanel")).to_contain_text("Admin Page")
+        expect(self.locator("#footerPanel")).to_contain_text("Home")
+        expect(self.locator("#footerPanel")).to_contain_text("Site Map")
+        expect(self.locator("#footerPanel")).to_contain_text("Contact Us")
+
+    def assert_contact_form_visible(self) -> None:
+        self.assert_no_internal_error()
+        expect(self.locator("input[id='name']")).to_be_visible()
+        expect(self.locator("input[id='email']")).to_be_visible()
+        expect(self.locator("input[id='phone']")).to_be_visible()
+        expect(self.locator("textarea[id='message']")).to_be_visible()
+        expect(self.page.get_by_role("button", name="Send to Customer Care")).to_be_visible()
+
+    def assert_registration_form_visible(self) -> None:
+        self.assert_no_internal_error()
+        field_ids = [
+            "customer.firstName",
+            "customer.lastName",
+            "customer.address.street",
+            "customer.address.city",
+            "customer.address.state",
+            "customer.address.zipCode",
+            "customer.phoneNumber",
+            "customer.ssn",
+            "customer.username",
+            "customer.password",
+            "repeatedPassword",
+        ]
+        for field_id in field_ids:
+            expect(self.locator(f"input[id='{field_id}']")).to_be_visible()
+        expect(self.page.get_by_role("button", name="Register")).to_be_visible()
+
+    def assert_customer_lookup_form_visible(self) -> None:
+        self.assert_no_internal_error()
+        field_ids = [
+            "firstName",
+            "lastName",
+            "address\\.street",
+            "address\\.city",
+            "address\\.state",
+            "address\\.zipCode",
+            "ssn",
+        ]
+        for field_id in field_ids:
+            expect(self.locator(f"#{field_id}")).to_be_visible()
+        expect(self.page.get_by_role("button", name="Find My Login Info")).to_be_visible()
+
     def assert_right_panel_contains(self, *texts: str) -> None:
         self.assert_no_internal_error()
         panel = self.locator("#rightPanel")

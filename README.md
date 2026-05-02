@@ -8,6 +8,8 @@ This project is structured as a small but realistic automation framework rather 
 
 - Public navigation flows
 - About, Services, and Site Map page checks
+- Home page layout and navigation checks
+- Contact, registration, and customer lookup form visibility checks
 - Contact form submission
 - Required-field validation for contact form
 - User registration
@@ -105,12 +107,16 @@ TEST_PAUSE_MS=5000
 `-- tests
     |-- conftest.py
     |-- test_about_page_disclaimer.py
+    |-- test_contact_form_fields_visible.py
     |-- test_contact_form_required_fields.py
     |-- test_contact_form_submission.py
     |-- test_customer_lookup_failure.py
+    |-- test_customer_lookup_form_fields_visible.py
     |-- test_customer_lookup_recovers_registered_user.py
     |-- test_duplicate_username_validation.py
     |-- test_empty_login_requires_credentials.py
+    |-- test_home_page_layout.py
+    |-- test_registration_form_fields_visible.py
     |-- test_registration_success.py
     |-- test_registration_required_fields.py
     |-- test_services_page_lists_bookstore_services.py
