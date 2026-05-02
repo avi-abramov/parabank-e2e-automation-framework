@@ -48,6 +48,18 @@ python -m playwright install chromium
 pytest -q tests
 ```
 
+Run only the positive demo flow if you want browser screenshots without red validation messages:
+
+```powershell
+pytest -q tests -m "not negative"
+```
+
+Run only validation/rejection checks:
+
+```powershell
+pytest -q tests -m negative
+```
+
 ## Default Local Run Behavior
 
 The local configuration is intentionally set for demonstration:
@@ -108,6 +120,7 @@ TEST_PAUSE_MS=5000
 ## Notes
 
 - The target system is an external public demo site, so behavior can change outside the project.
+- Red field-validation messages are expected in tests marked `negative`; they confirm the site rejects invalid input correctly.
 - ParaBank currently renders internal server errors on several logged-in banking flows, including accounts overview, opening new accounts, account details, bill pay, profile updates, loans, and transaction search. Those flows are intentionally excluded from the default demo suite so the visible run stays clean and trustworthy.
 - Failed tests save screenshots into `artifacts/screenshots/`.
 - The suite is intended to fail if ParaBank displays `An internal error has occurred and has been logged.`

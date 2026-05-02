@@ -7,6 +7,7 @@ from src.pages.parabank_page import ParaBankPage
 
 
 @pytest.mark.e2e
+@pytest.mark.negative
 def test_customer_lookup_failure(parabank: ParaBankPage):
     missing_customer = build_parabank_customer()
 
