@@ -84,14 +84,14 @@ pytest -q tests
 Open the interactive Allure report:
 
 ```powershell
-allure serve allure-results
+allure.cmd serve allure-results
 ```
 
 Or generate a static report folder:
 
 ```powershell
-allure generate allure-results -o allure-report --clean
-allure open allure-report
+allure.cmd generate allure-results -o allure-report --clean
+allure.cmd open allure-report
 ```
 
 Allure CLI and Java must be installed separately on the machine to open the HTML report. The pytest run still creates raw `allure-results/` even if the CLI is not installed.
@@ -101,6 +101,8 @@ On Windows, common install options include Scoop, Chocolatey, or Node.js/npm. Ex
 ```powershell
 npm install -g allure-commandline
 ```
+
+If PowerShell blocks `allure` because of script execution policy, use `allure.cmd` as shown above.
 
 ## Default Local Run Behavior
 
