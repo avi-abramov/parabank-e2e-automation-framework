@@ -26,6 +26,7 @@ This project is structured as a small but realistic automation framework rather 
 - Python
 - Pytest
 - Playwright
+- Allure Report
 - Page Object Model
 - Environment-based configuration with `.env`
 
@@ -33,10 +34,12 @@ This project is structured as a small but realistic automation framework rather 
 
 - Shared Playwright fixtures in [conftest.py](./conftest.py)
 - Centralized runtime settings in [src/core/settings.py](./src/core/settings.py)
+- Allure reporting helpers in [src/core/reporting.py](./src/core/reporting.py)
 - Reusable generated data in [src/core/test_data.py](./src/core/test_data.py)
 - Page-object implementation in [src/pages/parabank_page.py](./src/pages/parabank_page.py)
 - One focused scenario per test file under [tests](./tests)
 - Automatic screenshots on test failure
+- Allure result generation with readable steps, environment metadata, and failure screenshot attachments
 - Headed local execution with slow motion, maximized browser, and a 5-second pause between tests
 - Guard assertions that fail fast if ParaBank displays its internal server-error panel
 
@@ -50,6 +53,8 @@ python -m playwright install chromium
 pytest -q tests
 ```
 
+The default pytest configuration writes Allure results into `allure-results/`.
+
 Run only the positive demo flow if you want browser screenshots without red validation messages:
 
 ```powershell
@@ -60,6 +65,41 @@ Run only validation/rejection checks:
 
 ```powershell
 pytest -q tests -m negative
+```
+
+## Allure Report
+
+Install the dependencies first:
+
+```powershell
+python -m pip install -r requirements.txt
+```
+
+Run the tests and generate fresh Allure results:
+
+```powershell
+pytest -q tests
+```
+
+Open the interactive Allure report:
+
+```powershell
+allure serve allure-results
+```
+
+Or generate a static report folder:
+
+```powershell
+allure generate allure-results -o allure-report --clean
+allure open allure-report
+```
+
+Allure CLI and Java must be installed separately on the machine to open the HTML report. The pytest run still creates raw `allure-results/` even if the CLI is not installed.
+
+On Windows, common install options include Scoop, Chocolatey, or Node.js/npm. Example with npm after Node.js is installed:
+
+```powershell
+npm install -g allure-commandline
 ```
 
 ## Default Local Run Behavior
@@ -99,6 +139,7 @@ TEST_PAUSE_MS=5000
 |-- src
 |   |-- core
 |   |   |-- fixtures.py
+|   |   |-- reporting.py
 |   |   |-- settings.py
 |   |   `-- test_data.py
 |   `-- pages

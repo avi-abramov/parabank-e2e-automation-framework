@@ -6,6 +6,13 @@ from time import sleep
 import pytest
 from playwright.sync_api import Browser, BrowserContext, Page, Playwright, sync_playwright
 
+from src.core.reporting import (
+    apply_test_metadata,
+    attach_png,
+    attach_text,
+    write_allure_categories,
+    write_allure_environment,
+)
 from src.core.settings import PROJECT_ROOT, Settings, get_settings
 
 
@@ -16,6 +23,11 @@ SCREENSHOTS_DIR = ARTIFACTS_DIR / "screenshots"
 @pytest.fixture(scope="session")
 def settings() -> Settings:
     return get_settings()
+
+
+@pytest.fixture(autouse=True)
+def allure_metadata(request: pytest.FixtureRequest) -> None:
+    apply_test_metadata(request.node)
 
 
 @pytest.fixture(scope="session")
@@ -74,7 +86,11 @@ def page(context: BrowserContext, request: pytest.FixtureRequest) -> Page:
     if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
         SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
         screenshot_name = f"{request.node.name}.png"
-        page.screenshot(path=SCREENSHOTS_DIR / screenshot_name, full_page=True)
+        screenshot_path = SCREENSHOTS_DIR / screenshot_name
+        page.screenshot(path=screenshot_path, full_page=True)
+        attach_png(screenshot_path, "Failure screenshot")
+        attach_text("Current URL", page.url)
+        attach_text("Page title", page.title())
 
     settings = request.getfixturevalue("settings")
     if settings.test_pause_ms > 0:
@@ -88,3 +104,9 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]):
     outcome = yield
     report = outcome.get_result()
     setattr(item, f"rep_{report.when}", report)
+
+
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    settings = get_settings()
+    write_allure_environment(settings)
+    write_allure_categories()

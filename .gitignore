@@ -3,6 +3,8 @@ __pycache__/
 .pytest_cache/
 .playwright/
 artifacts/
+allure-results/
+allure-report/
 .env
 playwright-report/
 test-results/
