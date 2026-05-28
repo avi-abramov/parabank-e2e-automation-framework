@@ -1,5 +1,7 @@
 # ParaBank E2E Automation Framework
 
+[![ParaBank E2E Tests](https://github.com/avi-abramov/parabank-e2e-automation-framework/actions/workflows/tests.yml/badge.svg)](https://github.com/avi-abramov/parabank-e2e-automation-framework/actions/workflows/tests.yml)
+
 End-to-end UI automation project built with `pytest` and Playwright against the public ParaBank demo banking site.
 
 This project is structured as a small but realistic automation framework rather than a single test file. It uses reusable page objects, generated test data, shared fixtures, environment-based configuration, failure screenshots, and both positive and negative end-to-end scenarios.
@@ -104,6 +106,12 @@ npm install -g allure-commandline
 
 If PowerShell blocks `allure` because of script execution policy, use `allure.cmd` as shown above.
 
+## GitHub Actions CI
+
+The project includes a CI workflow in [.github/workflows/tests.yml](./.github/workflows/tests.yml).
+
+It runs on every push to `main`, pull request to `main`, and manual workflow dispatch. The workflow installs Python dependencies, installs Playwright Chromium, runs the full pytest suite in headless mode, generates an Allure HTML report, and uploads Allure artifacts for download from the workflow run.
+
 ## Default Local Run Behavior
 
 The local configuration is intentionally set for demonstration:
@@ -136,6 +144,9 @@ TEST_PAUSE_MS=5000
 ```text
 .
 |-- conftest.py
+|-- .github
+|   `-- workflows
+|       `-- tests.yml
 |-- pytest.ini
 |-- requirements.txt
 |-- src

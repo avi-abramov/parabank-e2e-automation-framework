@@ -1,0 +1,98 @@
+name: ParaBank E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Pytest, Playwright, and Allure
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      BASE_URL: https://parabank.parasoft.com/parabank/
+      BROWSER: chromium
+      HEADLESS: "true"
+      START_MAXIMIZED: "false"
+      SLOW_MO_MS: "0"
+      VIEWPORT_WIDTH: "1440"
+      VIEWPORT_HEIGHT: "900"
+      DEFAULT_TIMEOUT_MS: "15000"
+      TEST_PAUSE_MS: "0"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Install Playwright Chromium
+        run: python -m playwright install --with-deps chromium
+
+      - name: Run pytest suite
+        run: python -m pytest -q tests
+
+      - name: Set up Java for Allure
+        if: always()
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Node.js for Allure
+        if: always()
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      - name: Generate Allure HTML report
+        if: always()
+        run: |
+          if [ -d allure-results ] && [ "$(find allure-results -type f | wc -l)" -gt 0 ]; then
+            npm install -g allure-commandline
+            allure generate allure-results -o allure-report --clean
+          else
+            echo "No Allure results found; skipping report generation."
+          fi
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: allure-results
+          path: allure-results
+          if-no-files-found: warn
+
+      - name: Upload Allure HTML report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: allure-report
+          path: allure-report
+          if-no-files-found: warn
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: failure-screenshots
+          path: artifacts/screenshots
+          if-no-files-found: ignore
