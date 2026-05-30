@@ -35,6 +35,7 @@ This project is structured as a small but realistic automation framework rather 
 ## Framework Highlights
 
 - Shared Playwright fixtures in [conftest.py](./conftest.py)
+- Shared test fixtures for ParaBank page setup and generated customer data
 - Centralized runtime settings in [src/core/settings.py](./src/core/settings.py)
 - Allure reporting helpers in [src/core/reporting.py](./src/core/reporting.py)
 - Reusable generated data in [src/core/test_data.py](./src/core/test_data.py)

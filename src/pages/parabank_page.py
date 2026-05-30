@@ -12,6 +12,28 @@ from src.pages.base_page import BasePage
 
 class ParaBankPage(BasePage):
     INTERNAL_ERROR_TEXT = "An internal error has occurred and has been logged."
+    REGISTRATION_FIELD_IDS = (
+        "customer.firstName",
+        "customer.lastName",
+        "customer.address.street",
+        "customer.address.city",
+        "customer.address.state",
+        "customer.address.zipCode",
+        "customer.phoneNumber",
+        "customer.ssn",
+        "customer.username",
+        "customer.password",
+        "repeatedPassword",
+    )
+    CUSTOMER_LOOKUP_FIELD_IDS = (
+        "firstName",
+        "lastName",
+        "address\\.street",
+        "address\\.city",
+        "address\\.state",
+        "address\\.zipCode",
+        "ssn",
+    )
 
     def open(self) -> None:
         with report_step("Open ParaBank home page"):
@@ -69,36 +91,14 @@ class ParaBankPage(BasePage):
     def assert_registration_form_visible(self) -> None:
         with report_step("Verify registration form fields are visible"):
             self.assert_no_internal_error()
-            field_ids = [
-                "customer.firstName",
-                "customer.lastName",
-                "customer.address.street",
-                "customer.address.city",
-                "customer.address.state",
-                "customer.address.zipCode",
-                "customer.phoneNumber",
-                "customer.ssn",
-                "customer.username",
-                "customer.password",
-                "repeatedPassword",
-            ]
-            for field_id in field_ids:
+            for field_id in self.REGISTRATION_FIELD_IDS:
                 expect(self.locator(f"input[id='{field_id}']")).to_be_visible()
             expect(self.page.get_by_role("button", name="Register")).to_be_visible()
 
     def assert_customer_lookup_form_visible(self) -> None:
         with report_step("Verify customer lookup form fields are visible"):
             self.assert_no_internal_error()
-            field_ids = [
-                "firstName",
-                "lastName",
-                "address\\.street",
-                "address\\.city",
-                "address\\.state",
-                "address\\.zipCode",
-                "ssn",
-            ]
-            for field_id in field_ids:
+            for field_id in self.CUSTOMER_LOOKUP_FIELD_IDS:
                 expect(self.locator(f"#{field_id}")).to_be_visible()
             expect(self.page.get_by_role("button", name="Find My Login Info")).to_be_visible()
 
@@ -187,6 +187,11 @@ class ParaBankPage(BasePage):
             self.assert_right_panel_contains(f"Welcome {customer.username}")
             self.assert_right_panel_contains("Your account was created successfully.")
             expect(self.locator("#leftPanel")).to_contain_text("Open New Account")
+
+    def register_from_home(self, customer: ParabankCustomer) -> None:
+        with report_step(f"Register customer from home page: {customer.username}"):
+            self.open_registration_from_home()
+            self.register_customer(customer)
 
     def attempt_login(self, username: str, password: str) -> None:
         with report_step(f"Attempt login as: {username}"):
